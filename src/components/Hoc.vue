@@ -28,5 +28,5 @@ import {
 } from '@/components/ui/tabs';
 
 import GoodsTab from '@/components/GoodsTab.vue'
-import RacksTab from '@/components/RacksTab.vue';
+import RacksTab from '@/components/ShelvesTab.vue';
 </script>

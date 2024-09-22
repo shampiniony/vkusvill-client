@@ -3,12 +3,12 @@
     <div class='h-full w-full p-4 flex'>
       <div :class='selectedBox && `hidden sm:grid`'
         class='h-full w-full lg:w-[70%] bg-secondary rounded-md grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 lg:grid-cols-8 gap-6 p-4'>
-        <div v-for='(box, index) in boxesArray' :key='box'
+        <div v-for='(shelve) in shelvesArray' :key='shelve.shelve'
           class='h-full w-full rounded-lg flex items-center justify-center text-xl font-medium hover:cursor-pointer'
           :style="{
-            backgroundColor: getHue(coefficientArray[index])
-          }" @click="selectBox(box)">
-          {{ box }}
+            backgroundColor: getHue(shelve.avg_trigger)
+          }" @click="selectBox(shelve.shelve)">
+          {{ shelve.shelve }}
         </div>
       </div>
       <div :class='selectedBox ? `block` : `hidden`' class='lg:block h-full w-full sm:w-[30%] bg-white rounded-md px-4'>
@@ -31,11 +31,11 @@
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow v-for='row in 17'>
-                  <TableCell>{{ row }}</TableCell>
+                <TableRow v-for='row in selectedGoods?.sort((a, b) => b.trigger - a.trigger)'>
+                  <TableCell>{{ row.name }}</TableCell>
                   <TableCell class='flex justify-end'>
                     <div class='h-4 w-4 rounded-full' :style="{
-                      backgroundColor: getHue(0.5)
+                      backgroundColor: getHue(row.trigger)
                     }"></div>
                   </TableCell>
                 </TableRow>
@@ -55,13 +55,13 @@
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow class='hover:cursor-pointer' @click="selectBox(row)" v-for='row, index in boxesArray'>
+              <TableRow class='hover:cursor-pointer' @click="selectBox(row.shelve)" v-for='row in shelvesArray'>
                 <TableCell class="font-medium">
-                  {{ row }}
+                  {{ row.shelve }}
                 </TableCell>
                 <TableCell>
                   <div class='h-4 w-4 mx-auto rounded-full' :style="{
-                    backgroundColor: getHue(coefficientArray[index])
+                    backgroundColor: getHue(row.avg_trigger)
                   }"></div>
                 </TableCell>
               </TableRow>
@@ -86,16 +86,39 @@ import {
 
 import Card from '@/components/ui/card/Card.vue';
 import { getHue } from '@/lib/utils';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import axios from 'axios';
+import { Good } from '@/interfaces/good.interface';
+import { Shelve } from '@/interfaces/shelve.interface';
+import { BACKEND_URL } from '@/lib/contants';
 
-// Boxes and coefficients
-const boxesArray = ['A7', 'A3', 'Fr1', 'A2', 'Fr10', 'Fr7', 'Fr9', 'Fr5', 'A1', 'Fr11', 'A5', 'A6', 'Fr8', 'Fr2', 'Fr4', 'Fr6', 'Fr3'];
-const coefficientArray = [0.2, 0.5, 0.8, 0.9, 0.1, 0.7, 0.3, 0.6, 0.4, 0.8, 0.2, 0.5, 0.3, 0.6, 0.7, 0.9, 1.0];
-
+const shelvesArray = ref<Shelve[]>([]);
 const selectedBox = ref<string | null>(null);
+const selectedGoods = ref<Good[] | null>(null);
 
-const selectBox = (box: string | null) => {
+const selectBox = async (box: string | null) => {
   selectedBox.value = box;
+
+  if (box != null) {
+    const response = await axios.get(`${BACKEND_URL}/goods/shelve/${box}`);
+    selectedGoods.value = response.data;
+  }
 };
+
+async function fetchGoods() {
+  try {
+    const response = await axios.get(`${BACKEND_URL}/goods/shelves/`);
+    console.log(response);
+    shelvesArray.value = response.data;
+  } catch (error) {
+    console.error('Error fetching goods:', error);
+  } finally {
+    setTimeout(fetchGoods, 500);
+  }
+}
+
+onMounted(async () => {
+  fetchGoods();
+});
 
 </script>

@@ -18,9 +18,9 @@
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for='row in data'>
+            <TableRow v-for='row in goods'>
               <TableCell class="font-medium">
-                {{ row.rack }}
+                {{ row.shelve }}
               </TableCell>
               <TableCell>{{ row.name }}</TableCell>
               <TableCell>
@@ -31,12 +31,12 @@
               <TableCell class='hidden md:table-cell text-center'> {{ row.avg_cart }}</TableCell>
               <TableCell class="text-right hidden md:table-cell">
                 <div class='w-full flex justify-center items-center my-2'>
-                  <div
+                  <div @click='setGood(row.sku_id, ++row.amount)'
                     class='bg-secondary px-2 py-1 rounded-l-lg border-r border-transparent hover:border-muted-foreground/20 hover:cursor-pointer'>
                     +</div>
                   <div class='bg-secondary px-2 py-1 border-x border-transparent hover:border-muted-foreground/20'>{{
                     row.amount }}</div>
-                  <div
+                  <div @click='setGood(row.sku_id, --row.amount)'
                     class='bg-secondary px-2 py-1 rounded-r-lg border-l border-transparent hover:border-muted-foreground/20 hover:cursor-pointer'>
                     -</div>
                 </div>
@@ -49,7 +49,7 @@
         <div class='w-fit mx-auto pt-2'>
           <Calendar @update:model-value="(v) => {
             if (v) {
-              console.log((v.day % 14) - 1)
+              setDay((v.day % 14) - 1)
             }
           }" :v-model='value' :default-value='value' :weekday-format="'short'" />
         </div>
@@ -70,7 +70,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import Card from '@/components/ui/card/Card.vue';
-import { Ref, ref, watch } from 'vue';
+import { onMounted, Ref, ref, watch } from 'vue';
 import { type DateValue, getLocalTimeZone, today } from '@internationalized/date'
 
 const value = ref(today(getLocalTimeZone())) as Ref<DateValue>
@@ -82,86 +82,38 @@ watch(value, (newVal) => {
 
 import { getHue } from '@/lib/utils';
 import { BACKEND_URL } from '@/lib/contants';
+import { Good } from '@/interfaces/good.interface';
+import axios from 'axios';
 
+const goods = ref<Good[]>([]);
 
-const data = [{
-  rack: 'A7',
-  name: 'Арбуз',
-  trigger: 0.2,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr1',
-  name: 'Вишня',
-  trigger: 0.5,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr1',
-  name: 'Вишня',
-  trigger: 0.5,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr1',
-  name: 'Вишня',
-  trigger: 0.5,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr1',
-  name: 'Вишня',
-  trigger: 0.5,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr1',
-  name: 'Вишня',
-  trigger: 0.5,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr1',
-  name: 'Вишня',
-  trigger: 0.5,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr1',
-  name: 'Вишня',
-  trigger: 0.5,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr1',
-  name: 'Вишня',
-  trigger: 0.5,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr1',
-  name: 'Вишня',
-  trigger: 0.5,
-  avg_cart: 1,
-  amount: 1
-},
-{
-  rack: 'Fr9',
-  name: 'Банан',
-  trigger: 0.9,
-  avg_cart: 1,
-  amount: 1
-}]
+const setDay = async (day: number) => {
+  let response = await axios.put(`${BACKEND_URL}/goods/dt/${day}`);
+  console.log(response)
+}
 
-console.log(BACKEND_URL)
+const setGood = async (id: string, amount: number) => {
+  let response = await axios.put(`${BACKEND_URL}/goods/${id}/amount?new_amount=${amount}`);
+  console.log(response)
+
+  response = await axios.get(`${BACKEND_URL}/goods/`);
+  goods.value = response.data;
+}
+
+async function fetchGoods() {
+  try {
+    const response = await axios.get(`${BACKEND_URL}/goods/`);
+    console.log(response);
+    goods.value = response.data;
+  } catch (error) {
+    console.error('Error fetching goods:', error);
+  } finally {
+    setTimeout(fetchGoods, 500);
+  }
+}
+
+onMounted(async () => {
+  fetchGoods();
+});
 
 </script>

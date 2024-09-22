@@ -6,5 +6,5 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getHue(coefficient: number) {
-  return `hsla(${150 * coefficient}, 100%, 85%, 1)`;
+  return `hsla(${150 * (1 - coefficient)}, 100%, 85%, 1)`;
 }
