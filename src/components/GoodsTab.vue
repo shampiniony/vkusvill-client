@@ -47,7 +47,11 @@
       </div>
       <div class='h-full w-[30%] hidden lg:block'>
         <div class='w-fit mx-auto pt-2'>
-          <Calendar :default-value='value' :weekday-format="'short'" />
+          <Calendar @update:model-value="(v) => {
+            if (v) {
+              console.log((v.day % 14) - 1)
+            }
+          }" :v-model='value' :default-value='value' :weekday-format="'short'" />
         </div>
       </div>
     </div>
@@ -66,12 +70,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import Card from '@/components/ui/card/Card.vue';
-import { Ref, ref } from 'vue';
+import { Ref, ref, watch } from 'vue';
 import { type DateValue, getLocalTimeZone, today } from '@internationalized/date'
 
 const value = ref(today(getLocalTimeZone())) as Ref<DateValue>
 
+watch(value, (newVal) => {
+  const dayOfMonth = newVal.toDate(getLocalTimeZone()).getDate(); // Get the day of the month
+  console.log(`Day of the month: ${dayOfMonth}, Day % 14 = ${dayOfMonth % 14}`);
+});
+
 import { getHue } from '@/lib/utils';
+
 
 const data = [{
   rack: 'A7',
