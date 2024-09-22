@@ -81,6 +81,7 @@ watch(value, (newVal) => {
 });
 
 import { getHue } from '@/lib/utils';
+import { BACKEND_URL } from '@/lib/contants';
 
 
 const data = [{
@@ -160,5 +161,7 @@ const data = [{
   avg_cart: 1,
   amount: 1
 }]
+
+console.log(BACKEND_URL)
 
 </script>
